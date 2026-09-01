@@ -16,7 +16,7 @@ pipeline {
             steps {
                 echo "Building Docker image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}..."
                 sh """
-                    docker build --no-cache -f Dockerfile \
+                    docker build -f Dockerfile \
                         -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} \
                         -t ${REGISTRY}/${IMAGE_NAME}:latest .
                 """

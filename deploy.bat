@@ -1,7 +1,7 @@
 @echo off
 
 echo Building Docker image...
-docker build --no-cache -f Dockerfile -t is/11 .
+docker build -f Dockerfile -t is/11 .
 if %ERRORLEVEL% neq 0 goto :build_failed
 
 echo Tagging Docker image...

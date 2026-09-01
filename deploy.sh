@@ -2,7 +2,7 @@
 set -e
 
 echo "Building Docker image..."
-docker build --no-cache -f Dockerfile -t is/11 .
+docker build -f Dockerfile -t is/11 .
 
 echo "Tagging Docker image..."
 docker tag is/11:latest localhost:5000/is/11:latest
