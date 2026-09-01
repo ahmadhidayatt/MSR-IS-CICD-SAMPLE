@@ -15,6 +15,7 @@ pipeline {
         IMAGE_NAME   = 'is/11'
         IMAGE_TAG    = "${env.BUILD_NUMBER}"
         RELEASE_NAME = 'webmethods11'
+        DEPLOY_ENV   = 'dev'
     }
 
     stages {
@@ -50,6 +51,7 @@ pipeline {
                     if ! helm upgrade --install ${RELEASE_NAME} ./helmchart \
                         --set image.repository=${REGISTRY}/${IMAGE_NAME} \
                         --set image.tag=${IMAGE_TAG} \
+                        --set env=${DEPLOY_ENV} \
                         --force-conflicts \
                         --wait --timeout 3m; then
                         echo '[WARNING] Helm upgrade failed. Cleaning up potential HPA conflict...'
@@ -57,6 +59,7 @@ pipeline {
                         helm upgrade --install ${RELEASE_NAME} ./helmchart \
                             --set image.repository=${REGISTRY}/${IMAGE_NAME} \
                             --set image.tag=${IMAGE_TAG} \
+                            --set env=${DEPLOY_ENV} \
                             --force-conflicts \
                             --wait --timeout 3m
                     fi
