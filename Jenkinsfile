@@ -25,8 +25,16 @@ pipeline {
             }
         }
 
+        stage('Helm Lint') {
+            steps {
+                echo "Validating Helm chart syntax..."
+                sh "helm lint ./helmchart"
+            }
+        }
+
         stage('Docker Build') {
             steps {
+                echo "Building Docker image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}..."
                 sh """
                     docker build -f Dockerfile \
                         -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} \
@@ -37,6 +45,7 @@ pipeline {
 
         stage('Docker Push') {
             steps {
+                echo "Pushing Docker image to ${REGISTRY}..."
                 sh """
                     docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
                     docker push ${REGISTRY}/${IMAGE_NAME}:latest
@@ -46,6 +55,7 @@ pipeline {
 
         stage('Helm Deploy') {
             steps {
+                echo "Deploying to Kubernetes with Helm..."
                 sh """
                     if ! helm upgrade --install ${RELEASE_NAME} ./helmchart \
                         --set image.repository=${REGISTRY}/${IMAGE_NAME} \
@@ -66,10 +76,26 @@ pipeline {
             }
         }
 
-        stage('Verify') {
+        stage('Verify Rollout') {
             steps {
+                echo "Verifying Deployment rollout..."
                 sh "kubectl rollout status deployment/webmethods11-app --timeout=180s"
                 sh "kubectl get pods -l app.kubernetes.io/name=webmethods11-app -o wide"
+            }
+        }
+
+        stage('Smoke Test') {
+            steps {
+                echo "Executing Smoke Tests against MSR endpoints..."
+                sh """
+                    echo "Checking MSR Readiness Endpoint (Port 30555)..."
+                    curl -s -f -o /dev/null -w "Readiness HTTP Status: %{http_code}\\n" http://localhost:30555/health/readiness
+                    
+                    echo "Checking MSR Liveness Endpoint (Port 30555)..."
+                    curl -s -f -o /dev/null -w "Liveness HTTP Status: %{http_code}\\n" http://localhost:30555/health/liveness
+                    
+                    echo "All Smoke Tests passed successfully!"
+                """
             }
         }
     }
