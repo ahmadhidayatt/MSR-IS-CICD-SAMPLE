@@ -18,14 +18,14 @@ pushd helmchart
 if %ERRORLEVEL% neq 0 goto :cd_failed
 
 echo Deploying with Helm...
-helm upgrade --install webmethods11 . --force-conflicts
+helm upgrade --install webmethods11 . --force
 if %ERRORLEVEL% equ 0 goto :helm_success
 
 echo [WARNING] Helm upgrade failed. Attempting to resolve potential HPA conflict by deleting HPA webmethods11-app...
 kubectl delete hpa webmethods11-app --ignore-not-found
 
 echo Retrying Helm upgrade...
-helm upgrade --install webmethods11 . --force-conflicts
+helm upgrade --install webmethods11 . --force
 if %ERRORLEVEL% neq 0 goto :helm_failed
 
 :helm_success

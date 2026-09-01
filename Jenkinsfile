@@ -52,7 +52,7 @@ pipeline {
                         --set image.repository=${REGISTRY}/${IMAGE_NAME} \
                         --set image.tag=${IMAGE_TAG} \
                         --set env=${DEPLOY_ENV} \
-                        --force-conflicts \
+                        --force \
                         --wait --timeout 3m; then
                         echo '[WARNING] Helm upgrade failed. Cleaning up potential HPA conflict...'
                         kubectl delete hpa webmethods11-app --ignore-not-found
@@ -60,7 +60,7 @@ pipeline {
                             --set image.repository=${REGISTRY}/${IMAGE_NAME} \
                             --set image.tag=${IMAGE_TAG} \
                             --set env=${DEPLOY_ENV} \
-                            --force-conflicts \
+                            --force \
                             --wait --timeout 3m
                     fi
                 """

@@ -14,11 +14,11 @@ echo "Navigating to helmchart directory..."
 pushd helmchart > /dev/null
 
 echo "Deploying with Helm..."
-if ! helm upgrade --install webmethods11 . --force-conflicts; then
+if ! helm upgrade --install webmethods11 . --force; then
     echo "[WARNING] Helm upgrade failed. Attempting to resolve potential HPA conflict by deleting HPA webmethods11-app..."
     kubectl delete hpa webmethods11-app --ignore-not-found
     echo "Retrying Helm upgrade..."
-    helm upgrade --install webmethods11 . --force-conflicts
+    helm upgrade --install webmethods11 . --force
 fi
 
 echo "Restarting Kubernetes deployment..."
