@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:element name="databaseConfig">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="databaseInfo" minOccurs="1" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+
+	<xs:element name="noTransaction">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="class" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="localTransaction">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="class" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="xaTransaction">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="class" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="class" type="xs:string" />
+
+
+	<xs:element name="datasources">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="noTransaction" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="localTransaction" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="xaTransaction" minOccurs="0" maxOccurs="1"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="databaseInfo">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="id" type="xs:string" />
+				<xs:element name="name" type="xs:string" />
+				<xs:element name="classPathExntDir" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				<xs:element name="metadataClass" type="xs:string" />
+				<xs:element ref="datasources" />
+				<xs:element name="services" type="supportedInfo" />
+				<xs:element name="notifications" type="supportedInfo" />
+			</xs:sequence>
+		</xs:complexType>
+
+	</xs:element>
+
+	<xs:complexType name="supportedInfo">
+		<xs:sequence>
+			<xs:element ref="class" minOccurs="0" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+		<xs:attribute name="supportedAll" type="xs:boolean"></xs:attribute>
+	</xs:complexType>
+
+</xs:schema>

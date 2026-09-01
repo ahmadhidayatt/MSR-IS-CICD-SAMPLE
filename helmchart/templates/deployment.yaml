@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "webmethods11-app.fullname" . }}
+  labels:
+    {{- include "webmethods11-app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "webmethods11-app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "webmethods11-app.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "webmethods11-app.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config-volume-app-properties
+              mountPath: /opt/softwareag/IntegrationServer/application.properties
+              subPath: application.properties
+            - name: config-cache
+              mountPath: /opt/softwareag/IntegrationServer/config/Caching/KOMI_COMMON_SERVICE.xml
+              subPath: cache.xml
+            - name: config-cache2
+              mountPath: /opt/softwareag/IntegrationServer/config/Caching/MITRA.xml
+              subPath: cache.xml
+            - name: log-storage
+              mountPath: /opt/softwareag/IntegrationServer/logs
+
+        - name: fluentbit-sidecar
+          image: "{{ .Values.fluentbitSidecar.image.repository | default "fluent/fluent-bit" }}:{{ .Values.fluentbitSidecar.image.tag | default "latest" }}"
+          resources:
+            {{- toYaml (.Values.fluentbitSidecar.resources | default (dict "limits" (dict "memory" "128Mi" "cpu" "100m"))) | nindent 12 }}
+          volumeMounts:
+            - name: log-storage
+              mountPath: /opt/softwareag/IntegrationServer/logs
+              readOnly: true
+            - name: fluentbit-sidecar-config
+              mountPath: /fluent-bit/etc/
+            - name : fluentbit-state
+              mountPath : /fluentbit-state
+
+      volumes:
+        - name: config-volume-app-properties
+          configMap:
+            name: {{ .Chart.Name }}-app-properties-config
+        - name: config-cache
+          configMap:
+            name: {{ .Chart.Name }}-cache-config
+        - name: config-cache2
+          configMap:
+            name: {{ .Chart.Name }}-cache2-config
+        - name: log-storage
+          emptyDir: {}
+        - name : fluentbit-state
+          emptyDir: {}
+        - name: fluentbit-sidecar-config
+          configMap:
+            name: {{ .Chart.Name }}-fluentbit-sidecar-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

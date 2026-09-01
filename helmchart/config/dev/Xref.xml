@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<IDataXMLCoder version="1.0">
+  <record javaclass="com.wm.app.jdbc.JDBCBasicData">
+    <value name="alias">Xref</value>
+    <null name="connPoolAlias"/>
+    <value name="autoCommit">true</value>
+    <value name="cache">true</value>
+    <number name="isolationLevel" type="java.lang.Integer">-1</number>
+    <value name="description">Key Cross Referencing and Echo Suppression</value>
+    <value name="failFastMode">true</value>
+    <value name="exposeFailFast">true</value>
+  </record>
+</IDataXMLCoder>

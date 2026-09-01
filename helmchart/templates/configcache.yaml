@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-cache-config
+data:
+  cache.xml: |
+  {{- if eq .Values.env "dev" }}
+  {{- (.Files.Get  "config/dev/cachetc.conf") | nindent 3 }}
+  {{- else if eq .Values.env "testing" }}
+  {{- (.Files.Get "config/testing/cachetc.conf") | nindent 3 }}
+  {{- else }}
+  {{- (.Files.Get "config/dev/cachetc.conf") | nindent 3 }}
+  {{- end }}
+

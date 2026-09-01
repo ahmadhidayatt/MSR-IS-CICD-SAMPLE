@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="dbConfig.xsd">
+
+	<databaseInfo>
+		<id>ORACLE</id>
+		<name>Oracle</name>
+		<classPathExntDir>code\jars\oracle</classPathExntDir>
+		<metadataClass>com.wm.adapter.wmjdbc.connection.metadata.OracleMetadataProvider</metadataClass>
+		<datasources>
+			<noTransaction>
+				<class>oracle.jdbc.pool.OracleDataSource</class>
+			</noTransaction>
+			<localTransaction>
+				<class>oracle.jdbc.pool.OracleDataSource</class>
+			</localTransaction>
+			<xaTransaction>
+				<class>oracle.jdbc.xa.client.OracleXADataSource</class>
+			</xaTransaction>
+		</datasources>
+		<services supportedAll="true" />
+		<notifications supportedAll="true"/>
+	</databaseInfo>
+
+	<databaseInfo>
+		<id>MSSQL</id>
+		<name>Microsoft SQL Server</name>
+		<metadataClass>com.wm.adapter.wmjdbc.connection.metadata.MSSQLMetadataProvider</metadataClass>
+		<datasources>
+			<noTransaction>
+				<class>com.microsoft.sqlserver.jdbc.SQLServerDataSource</class>
+				<class>com.dd.jdbcx.sqlserver.SQLServerDataSource</class>
+			</noTransaction>
+			<localTransaction>
+				<class>com.microsoft.sqlserver.jdbc.SQLServerDataSource</class>
+				<class>com.dd.jdbcx.sqlserver.SQLServerDataSource</class>
+			</localTransaction>
+			<xaTransaction>
+				<class>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</class>
+				<class>com.dd.jdbcx.sqlserver.SQLServerDataSource</class>
+			</xaTransaction>
+		</datasources>
+		<services supportedAll="true" />
+		<notifications supportedAll="true"/>
+	</databaseInfo>
+	
+	<databaseInfo>
+		<id>MySQL</id>
+		<name>MySQL</name>
+		<metadataClass>com.wm.adapter.wmjdbc.connection.metadata.MYSQLMetadataProvider</metadataClass>
+		<datasources>
+			<noTransaction>
+				<class>com.mysql.jdbc.jdbc2.optional.MysqlDataSource</class>
+			</noTransaction>
+			<localTransaction>
+				<class>com.mysql.jdbc.jdbc2.optional.MysqlDataSource</class>
+			</localTransaction>
+			<xaTransaction>
+				<class>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</class>
+			</xaTransaction>
+		</datasources>
+		<services supportedAll="true" />
+		<notifications supportedAll="true"/>
+	</databaseInfo>
+
+
+</databaseConfig>
+

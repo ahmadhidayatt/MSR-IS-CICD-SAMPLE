@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseConfiguration dbVendor="Cassandra">
+<typeMapping>
+</typeMapping>
+<columnTypeMapping>	
+<columnType nativeSqlType="UUID" jdbcTypeName="VARCHAR"/>
+<columnType nativeSqlType="TIMEUUID" jdbcTypeName="VARCHAR"/>
+</columnTypeMapping>
+</databaseConfiguration>

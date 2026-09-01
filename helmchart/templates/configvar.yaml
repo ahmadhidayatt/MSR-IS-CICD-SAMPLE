@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-app-properties-config
+data:
+  application.properties: |
+  {{- if eq .Values.env "dev" }}
+  {{ (.Files.Get "config/dev/appproperties.conf") | nindent 4 }}
+  {{- else if eq .Values.env "testing" }}
+  {{ (.Files.Get "config/testing/appproperties.conf") | nindent 4 }}
+  {{- else }}
+  {{ (.Files.Get "config/dev/appproperties.conf") | nindent 4 }}
+  {{- end }}
+

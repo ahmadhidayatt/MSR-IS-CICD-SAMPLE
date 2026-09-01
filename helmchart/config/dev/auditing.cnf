@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Values version="2.0">
+  <record name="Guaranteed Delivery Inbound Logger" javaclass="com.wm.util.Values">
+    <value name="enabled">false</value>
+    <value name="defaultDBName">CoreAuditDBDest</value>
+    <value name="defaultDBUri">java:webmethods/jdbc/ISCoreAudit</value>
+    <value name="defaultFSName">AuditFSDest</value>
+    <value name="defaultFSUri">logs</value>
+  </record>
+  <record name="Service Logger" javaclass="com.wm.util.Values">
+    <value name="enabled">false</value>
+    <value name="level">perSvc</value>
+    <value name="defaultDBName">ServiceDBDest</value>
+    <value name="defaultDBUri">java:webmethods/jdbc/ISCoreAudit</value>
+    <value name="defaultFSName">AuditFSDest</value>
+    <value name="defaultFSUri">logs</value>
+  </record>
+  <record name="Messaging Logger" javaclass="com.wm.util.Values">
+    <value name="enabled">false</value>
+    <value name="defaultFSName">AuditFSDest</value>
+    <value name="defaultFSUri">logs</value>
+  </record>
+  <record name="Error Logger" javaclass="com.wm.util.Values">
+    <value name="enabled">true</value>
+    <value name="defaultDBName">ErrorDBDest</value>
+    <value name="defaultDBUri">java:webmethods/jdbc/ISCoreAudit</value>
+    <value name="defaultFSName">AuditFSDest</value>
+    <value name="defaultFSUri">logs</value>
+  </record>
+  <record name="Security Logger" javaclass="com.wm.util.Values">
+    <value name="enabled">false</value>
+    <value name="defaultDBName">CoreAuditDBDest</value>
+    <value name="defaultDBUri">java:webmethods/jdbc/ISCoreAudit</value>
+    <value name="defaultFSName">AuditFSDest</value>
+    <value name="defaultFSUri">logs</value>
+  </record>
+  <record name="ServiceAssoc Logger" javaclass="com.wm.util.Values">
+    <value name="enabled">false</value>
+    <value name="level">perSvc</value>
+    <value name="defaultDBName">ServiceDBDest</value>
+    <value name="defaultDBUri">java:webmethods/jdbc/ISCoreAudit</value>
+    <value name="defaultFSName">AuditFSDest</value>
+    <value name="defaultFSUri">logs</value>
+  </record>
+  <record name="Session Logger" javaclass="com.wm.util.Values">
+    <value name="enabled">false</value>
+    <value name="defaultDBName">SessionDBDest</value>
+    <value name="defaultDBUri">java:webmethods/jdbc/ISCoreAudit</value>
+    <value name="defaultFSName">AuditFSDest</value>
+    <value name="defaultFSUri">logs</value>
+  </record>
+  <record name="Guaranteed Delivery Outbound Logger" javaclass="com.wm.util.Values">
+    <value name="enabled">false</value>
+    <value name="defaultDBName">CoreAuditDBDest</value>
+    <value name="defaultDBUri">java:webmethods/jdbc/ISCoreAudit</value>
+    <value name="defaultFSName">AuditFSDest</value>
+    <value name="defaultFSUri">logs</value>
+  </record>
+</Values>

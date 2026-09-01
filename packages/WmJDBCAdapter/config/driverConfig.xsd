@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+
+
+    <xs:element name="driverDetails" type="driverDetailsType"></xs:element>
+
+    <xs:complexType name="driverDetailsType">
+    	<xs:sequence>
+    		<xs:element name="database" type="databaseType" minOccurs="0" maxOccurs="unbounded"></xs:element>
+    	</xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="databaseType">
+    	<xs:sequence>
+    		<xs:element name="name" type="xs:string"></xs:element>
+    		<xs:element name="driver" type="driverType" minOccurs="0" maxOccurs="unbounded"></xs:element>
+    	</xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="driverType">
+    	<xs:sequence>
+    		<xs:element name="name" type="xs:string"></xs:element>
+    		<xs:element name="path" type="xs:string"></xs:element>
+    	</xs:sequence>
+    </xs:complexType>
+</xs:schema>
