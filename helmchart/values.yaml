@@ -136,10 +136,10 @@ httpRoute:
 resources: 
   limits:
    cpu: "500m"
-   memory: 1Gi
+   memory: 2Gi
   requests:
      cpu: "250m"
-     memory: 1Gi
+     memory: 2Gi
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -156,9 +156,9 @@ startupProbe:
   httpGet:
     path: /health/liveness
     port: 5555
-  initialDelaySeconds: 15 # Berikan waktu bernapas di awal tanpa di-probe dulu
-  periodSeconds: 5        # Cek setiap 5 detik setelahnya
-  failureThreshold: 23    # 15s + (23 x 5s) = 130 detik total batas aman
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 55    # 30s + (55 x 5s) = 305 detik (~5 menit) total batas startup
   successThreshold: 1
 
 readinessProbe:
@@ -220,9 +220,9 @@ affinity: {}
 
 extraEnv:
   - name: JAVA_MIN_MEM
-    value: "512M"
+    value: "1024M"
   - name: JAVA_MAX_MEM
-    value: "512M"
+    value: "1024M"
   - name: JAVA_CUSTOM_OPTS
     value: "-XX:+AlwaysPreTouch"
 
