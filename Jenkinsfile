@@ -10,18 +10,19 @@ pipeline {
     }
 
     environment {
-        REGISTRY     = 'localhost:5000'
-        IMAGE_NAME   = 'is/11'
-        IMAGE_TAG    = "${env.BUILD_NUMBER}"
-        RELEASE_NAME = 'webmethods11'
-        DEPLOY_ENV   = 'dev'
+        REGISTRY      = 'localhost:5000'
+        IMAGE_NAME    = 'is/11'
+        IMAGE_TAG     = "${env.BUILD_NUMBER}"
+        TARGET_BRANCH = "${env.BRANCH_NAME ?: (env.GIT_BRANCH ? env.GIT_BRANCH.replace('origin/', '') : 'main')}"
     }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-                echo "Branch: ${env.GIT_BRANCH}, Commit: ${env.GIT_COMMIT}"
+                echo "Target Branch : ${env.TARGET_BRANCH}"
+                echo "Git Commit    : ${env.GIT_COMMIT}"
+                echo "Build Tag     : ${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
             }
         }
 
@@ -34,67 +35,126 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                echo "Building Docker image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}..."
+                echo "Building Docker image: ${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG}..."
                 sh """
                     docker build -f Dockerfile \
-                        -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} \
-                        -t ${REGISTRY}/${IMAGE_NAME}:latest .
+                        -t ${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG} \
+                        -t ${env.REGISTRY}/${env.IMAGE_NAME}:latest .
                 """
             }
         }
 
         stage('Docker Push') {
             steps {
-                echo "Pushing Docker image to ${REGISTRY}..."
+                echo "Pushing Docker image to ${env.REGISTRY}..."
                 sh """
-                    docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
-                    docker push ${REGISTRY}/${IMAGE_NAME}:latest
+                    docker push ${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG}
+                    docker push ${env.REGISTRY}/${env.IMAGE_NAME}:latest
                 """
             }
         }
 
-        stage('Helm Deploy') {
+        // ==========================================
+        // 1. DEPLOY KE DEV (Branch rc* / dev / non-main)
+        // ==========================================
+        stage('Deploy to DEV') {
+            when {
+                expression {
+                    return (env.TARGET_BRANCH =~ /^rc/ || env.TARGET_BRANCH =~ /^dev/ || env.TARGET_BRANCH != 'main')
+                }
+            }
+            environment {
+                RELEASE_NAME = 'webmethods11'
+                DEPLOY_ENV   = 'dev'
+                NODE_PORT    = '30555'
+            }
             steps {
-                echo "Deploying to Kubernetes with Helm..."
+                echo "========================================="
+                echo ">>> Deploying to DEV Environment (${env.RELEASE_NAME}) <<<"
+                echo "========================================="
                 sh """
-                    if ! helm upgrade --install ${RELEASE_NAME} ./helmchart \
-                        --set image.repository=${REGISTRY}/${IMAGE_NAME} \
-                        --set image.tag=${IMAGE_TAG} \
-                        --set env=${DEPLOY_ENV} \
+                    if ! helm upgrade --install ${env.RELEASE_NAME} ./helmchart \
+                        --set image.repository=${env.REGISTRY}/${env.IMAGE_NAME} \
+                        --set image.tag=${env.IMAGE_TAG} \
+                        --set env=${env.DEPLOY_ENV} \
+                        --set service.nodePort=${env.NODE_PORT} \
                         --force \
                         --wait --timeout 3m; then
                         echo '[WARNING] Helm upgrade failed. Cleaning up potential HPA conflict...'
                         kubectl delete hpa webmethods11-app --ignore-not-found
-                        helm upgrade --install ${RELEASE_NAME} ./helmchart \
-                            --set image.repository=${REGISTRY}/${IMAGE_NAME} \
-                            --set image.tag=${IMAGE_TAG} \
-                            --set env=${DEPLOY_ENV} \
+                        helm upgrade --install ${env.RELEASE_NAME} ./helmchart \
+                            --set image.repository=${env.REGISTRY}/${env.IMAGE_NAME} \
+                            --set image.tag=${env.IMAGE_TAG} \
+                            --set env=${env.DEPLOY_ENV} \
+                            --set service.nodePort=${env.NODE_PORT} \
                             --force \
                             --wait --timeout 3m
                     fi
                 """
-            }
-        }
-
-        stage('Verify Rollout') {
-            steps {
-                echo "Verifying Deployment rollout..."
+                echo "Verifying DEV deployment..."
                 sh "kubectl rollout status deployment/webmethods11-app --timeout=180s"
                 sh "kubectl get pods -l app.kubernetes.io/name=webmethods11-app -o wide"
+                
+                echo "Running Smoke Test on DEV (Port ${env.NODE_PORT})..."
+                sh """
+                    curl -s -f -o /dev/null -w "DEV Readiness HTTP Status: %{http_code}\\n" http://localhost:${env.NODE_PORT}/health/readiness
+                    curl -s -f -o /dev/null -w "DEV Liveness HTTP Status: %{http_code}\\n" http://localhost:${env.NODE_PORT}/health/liveness
+                    echo "DEV Smoke Test PASSED!"
+                """
             }
         }
 
-        stage('Smoke Test') {
+        // ==========================================
+        // 2. DEPLOY KE PROD (Branch main / master)
+        // ==========================================
+        stage('Deploy to PROD') {
+            when {
+                beforeInput true
+                expression {
+                    return (env.TARGET_BRANCH == 'main' || env.TARGET_BRANCH == 'master')
+                }
+            }
+            input {
+                message "Konfirmasi: Deploy image ke PRODUCTION?"
+                ok "Approve & Deploy to PROD"
+            }
+            environment {
+                RELEASE_NAME = 'webmethods11'
+                DEPLOY_ENV   = 'prod'
+                NODE_PORT    = '30555'
+            }
             steps {
-                echo "Executing Smoke Tests against MSR endpoints..."
+                echo "========================================="
+                echo ">>> Deploying to PROD Environment (${env.RELEASE_NAME}) <<<"
+                echo "========================================="
                 sh """
-                    echo "Checking MSR Readiness Endpoint (Port 30555)..."
-                    curl -s -f -o /dev/null -w "Readiness HTTP Status: %{http_code}\\n" http://localhost:30555/health/readiness
-                    
-                    echo "Checking MSR Liveness Endpoint (Port 30555)..."
-                    curl -s -f -o /dev/null -w "Liveness HTTP Status: %{http_code}\\n" http://localhost:30555/health/liveness
-                    
-                    echo "All Smoke Tests passed successfully!"
+                    if ! helm upgrade --install ${env.RELEASE_NAME} ./helmchart \
+                        --set image.repository=${env.REGISTRY}/${env.IMAGE_NAME} \
+                        --set image.tag=${env.IMAGE_TAG} \
+                        --set env=${env.DEPLOY_ENV} \
+                        --set service.nodePort=${env.NODE_PORT} \
+                        --force \
+                        --wait --timeout 3m; then
+                        echo '[WARNING] Helm upgrade failed. Cleaning up potential HPA conflict...'
+                        kubectl delete hpa webmethods11-app --ignore-not-found
+                        helm upgrade --install ${env.RELEASE_NAME} ./helmchart \
+                            --set image.repository=${env.REGISTRY}/${env.IMAGE_NAME} \
+                            --set image.tag=${env.IMAGE_TAG} \
+                            --set env=${env.DEPLOY_ENV} \
+                            --set service.nodePort=${env.NODE_PORT} \
+                            --force \
+                            --wait --timeout 3m
+                    fi
+                """
+                echo "Verifying PROD deployment..."
+                sh "kubectl rollout status deployment/webmethods11-app --timeout=180s"
+                sh "kubectl get pods -l app.kubernetes.io/name=webmethods11-app -o wide"
+                
+                echo "Running Smoke Test on PROD (Port ${env.NODE_PORT})..."
+                sh """
+                    curl -s -f -o /dev/null -w "PROD Readiness HTTP Status: %{http_code}\\n" http://localhost:${env.NODE_PORT}/health/readiness
+                    curl -s -f -o /dev/null -w "PROD Liveness HTTP Status: %{http_code}\\n" http://localhost:${env.NODE_PORT}/health/liveness
+                    echo "PROD Smoke Test PASSED!"
                 """
             }
         }
@@ -102,10 +162,10 @@ pipeline {
 
     post {
         success {
-            echo "Deploy SUCCESS - Image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "Pipeline SUCCESS for branch [${env.TARGET_BRANCH}] - Image: ${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
         }
         failure {
-            echo "Deploy FAILED - Build #${env.BUILD_NUMBER}"
+            echo "Pipeline FAILED for branch [${env.TARGET_BRANCH}] - Build #${env.BUILD_NUMBER}"
         }
         always {
             cleanWs()
