@@ -101,11 +101,19 @@ pipeline {
             }
         }
 
+        // ==========================================
+        // 2. DEPLOY KE PROD (Branch main / master)
+        // ==========================================
         stage('Deploy to PROD') {
             when {
+                beforeInput true
                 expression {
                     return (TARGET_BRANCH == 'main' || TARGET_BRANCH == 'master')
                 }
+            }
+            input {
+                message "Konfirmasi: Deploy image [${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}] ke PRODUCTION?"
+                ok "Approve & Deploy to PROD"
             }
             environment {
                 RELEASE_NAME = 'webmethods11'
