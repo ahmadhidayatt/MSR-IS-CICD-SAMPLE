@@ -62,8 +62,8 @@ pipeline {
                         --set env=dev \
                         --set service.nodePort=${env.NODE_PORT}
                     kubectl rollout status deployment/${env.RELEASE_NAME}-app --timeout=360s
-                    curl -sf http://localhost:${env.NODE_PORT}/health/readiness
-                    curl -sf http://localhost:${env.NODE_PORT}/health/liveness
+                    curl -sf --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:${env.NODE_PORT}/health/readiness
+                    curl -sf --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:${env.NODE_PORT}/health/liveness
                 """
             }
         }
@@ -87,8 +87,8 @@ pipeline {
                         --set env=prod \
                         --set service.nodePort=${env.NODE_PORT}
                     kubectl rollout status deployment/${env.RELEASE_NAME}-app --timeout=360s
-                    curl -sf http://localhost:${env.NODE_PORT}/health/readiness
-                    curl -sf http://localhost:${env.NODE_PORT}/health/liveness
+                    curl -sf --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:${env.NODE_PORT}/health/readiness
+                    curl -sf --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:${env.NODE_PORT}/health/liveness
                 """
             }
         }
